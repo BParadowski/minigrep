@@ -1,9 +1,13 @@
 use std::env;
 use std::fs;
+use std::process;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let config = parse_config(&args);
+    let config = Config::build(&args).unwrap_or_else(|err| {
+        println!("Encountered an error: {err}");
+        process::exit(1);
+    });
 
     println!("Looking for {} in {}", config.query, config.path);
 
@@ -17,9 +21,14 @@ struct Config {
     path: String,
 }
 
-fn parse_config(args: &[String]) -> Config {
-    let query = args[1].clone();
-    let path = args[2].clone();
+impl Config {
+    fn build(args: &[String]) -> Result<Config, &str> {
+        if args.len() < 3 {
+           return  Err("Fewer than 2 arguments provided.");
+        }
+        let query = args[1].clone();
+        let path = args[2].clone();
 
-    Config { query, path }
+        Ok(Config { query, path })
+    }
 }
